@@ -1,13 +1,13 @@
 import SafeAreaWrapper from '@/components/SafeAreaWrapper'
-import ExploreView from '@/view/explore/ExploreView'
+import HomeView from '@/view/home/HomeView'
 import React from 'react'
 
-const ExplorePage = () => {
+const HomePage = () => {
     return (
         <SafeAreaWrapper>
-            <ExploreView />
+            <HomeView />
         </SafeAreaWrapper>
     )
 }
 
-export default ExplorePage
+export default HomePage

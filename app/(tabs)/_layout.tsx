@@ -1,35 +1,142 @@
+import { Colors } from "@/constants/Colors";
+import { Ionicons, MaterialCommunityIcons, Octicons } from "@expo/vector-icons";
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+const TabLayout = () => {
+    return (
+        <Tabs screenOptions={{
+            tabBarShowLabel: false,
+            tabBarActiveTintColor: '#FFFFFF',
+            tabBarInactiveTintColor: '#9DA0A5',
+            tabBarItemStyle: {
+                height: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 16
+            },
+            tabBarStyle: {
+                backgroundColor: '#1A1A1A',
+                position: 'absolute',
+                bottom: 50,
+                left: 45,
+                right: 45,
+                borderRadius: 35,
+                height: 70,
+                borderTopWidth: 0,
+                paddingBottom: 0,
+                paddingHorizontal: Platform.OS === "ios" ? 4 : 10,
+                elevation: 10,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 10 },
+                shadowOpacity: 0.4,
+                shadowRadius: 15,
+                width: "80%",
+                marginLeft: "10%"
+            }
+        }}>
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+            {/* HOME */}
+            <Tabs.Screen
+                name="home"
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ focused, color }) => (
+                        <View style={focused ? styles.activeTab : styles.inactiveTab}>
+                            <Octicons name={focused ? "home-fill" : "home"} size={22} color={color} />
+                        </View>
+                    )
+                }}
+            />
 
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
-}
+            {/* EXPLORE */}
+            <Tabs.Screen
+                name="explore"
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ focused, color }) => (
+                        <View style={focused ? styles.activeTab : styles.inactiveTab}>
+                            <MaterialCommunityIcons
+                                name={focused ? "ticket-percent" : "ticket-percent-outline"}
+                                size={24}
+                                color={color}
+                            />
+                        </View>
+                    )
+                }}
+            />
+
+            {/* CART (NEW) */}
+            <Tabs.Screen
+                name="cart"
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ focused, color }) => (
+                        <View style={focused ? styles.activeTab : styles.inactiveTab}>
+                            <Ionicons
+                                name={focused ? "cart" : "cart-outline"}
+                                size={24}
+                                color={color}
+                            />
+                        </View>
+                    )
+                }}
+            />
+
+            {/* WISHLIST */}
+            <Tabs.Screen
+                name="wishlist"
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ focused, color }) => (
+                        <View style={focused ? styles.activeTab : styles.inactiveTab}>
+                            <Ionicons
+                                name={focused ? 'heart' : 'heart-outline'}
+                                size={24}
+                                color={color}
+                            />
+                        </View>
+                    )
+                }}
+            />
+
+            {/* PROFILE */}
+            <Tabs.Screen
+                name="profile"
+                options={{
+                    headerShown: false,
+                    tabBarIcon: ({ focused, color }) => (
+                        <View style={focused ? styles.activeTab : styles.inactiveTab}>
+                            <Octicons
+                                name={focused ? "person-fill" : "person"}
+                                size={22}
+                                color={color}
+                            />
+                        </View>
+                    )
+                }}
+            />
+
+        </Tabs>
+    );
+};
+
+const styles = StyleSheet.create({
+    activeTab: {
+        backgroundColor: Colors.orange.theme,
+        width: 48,
+        height: 48,
+        borderRadius: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    inactiveTab: {
+        width: 48,
+        height: 48,
+        justifyContent: 'center',
+        alignItems: 'center',
+    }
+});
+
+export default TabLayout;
