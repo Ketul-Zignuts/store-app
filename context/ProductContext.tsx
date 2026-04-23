@@ -1,6 +1,6 @@
 import api from "@/axios/axios";
 import { Product } from "@/context/types/product";
-import React, { createContext, useState } from "react";
+import React, { createContext, useCallback, useRef, useState } from "react";
 
 export type Category = {
     id: number;
@@ -15,6 +15,12 @@ interface PriceFilterTypes {
     price_min: number;
     price_max: number;
 }
+
+const DEFAULT_PRICE_FILTER: PriceFilterTypes = {
+    price: 0,
+    price_min: 0,
+    price_max: 0,
+};
 
 interface ProductContextType {
     products: Product[];
@@ -40,6 +46,10 @@ interface ProductContextType {
     deleteProduct: (id: number) => Promise<void>;
     priceFilter: PriceFilterTypes
     setPriceFilter: React.Dispatch<React.SetStateAction<PriceFilterTypes>>
+    searchValue: string
+    setSearchValue: React.Dispatch<React.SetStateAction<string>>
+    productDetail: Product | null;
+    loadingDetail: boolean;
 }
 
 export const ProductContext = createContext<ProductContextType | null>(null);
@@ -59,15 +69,16 @@ export const ProductProvider = ({ children }: Props) => {
     const [refreshing, setRefreshing] = useState(false);
     const [hasMore, setHasMore] = useState(true);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [searchValue, setSearchValue] = useState<string>("")
+    const [productDetail, setProductDetail] = useState<Product | null>(null);
+    const [loadingDetail, setLoadingDetail] = useState(false);
+    const productCache = useRef<Record<number, Product>>({});
+    const offsetRef = useRef(0);
 
     const [loadingCategories, setLoadingCategories] = useState(false);
-    const [priceFilter, setPriceFilter] = useState<PriceFilterTypes>({
-        price: 0,
-        price_min: 0,
-        price_max: 0
-    });
+    const [priceFilter, setPriceFilter] = useState<PriceFilterTypes>(DEFAULT_PRICE_FILTER);
 
-    const fetchProducts = async (offset: number, categoryId?: string | null) => {
+    const fetchProducts = useCallback(async (offset: number, categoryId?: string | null, title?: string | null) => {
         const params: any = {
             offset,
             limit: LIMIT,
@@ -75,29 +86,39 @@ export const ProductProvider = ({ children }: Props) => {
         if (categoryId) params.categoryId = categoryId;
         if (priceFilter.price > 0) {
             params.price = priceFilter.price;
+        } else {
+            if (priceFilter.price_min > 0) {
+                params.price_min = priceFilter.price_min;
+            }
+            if (priceFilter.price_max > 0) {
+                params.price_max = priceFilter.price_max;
+            }
         }
-        if (priceFilter.price_min > 0) {
-            params.price_min = priceFilter.price_min;
-        }
-        if (priceFilter.price_max > 0) {
-            params.price_max = priceFilter.price_max;
+        if (title) {
+            params.title = title;
         }
         const res = await api.get("/products", { params });
         return res.data;
-    };
+    }, [priceFilter]);
 
-    const loadProducts = async (refresh = false) => {
+    const loadProducts = useCallback(async (refresh = false) => {
         try {
             if (loading) return;
             setLoading(true);
-            if (refresh) setRefreshing(true);
-            const offset = refresh ? 0 : products.length;
-            const data = await fetchProducts(offset, selectedCategory);
+            if (refresh) {
+                setRefreshing(true);
+                offsetRef.current = 0;
+            }
+
+            const data = await fetchProducts(offsetRef.current, selectedCategory, searchValue);
+
             if (refresh) {
                 setProducts(data);
             } else {
                 setProducts((prev) => [...prev, ...data]);
             }
+
+            offsetRef.current += data.length;
             setHasMore(data.length === LIMIT);
         } catch (error) {
             console.log("loadProducts error:", error);
@@ -105,14 +126,14 @@ export const ProductProvider = ({ children }: Props) => {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, [fetchProducts, loading, selectedCategory, searchValue]);
 
     const loadMore = async () => {
         if (loadingMore || loading || !hasMore) return;
         try {
             setLoadingMore(true);
             const offset = products.length;
-            const data = await fetchProducts(offset, selectedCategory);
+            const data = await fetchProducts(offset, selectedCategory, searchValue);
             setProducts((prev) => [...prev, ...data]);
             if (data.length < LIMIT) setHasMore(false);
         } catch (error) {
@@ -134,10 +155,27 @@ export const ProductProvider = ({ children }: Props) => {
         }
     };
 
-    const getProductById = async (id: number) => {
-        const res = await api.get(`/products/${id}`);
+    const getProductById = useCallback(async (id: number) => {
+    try {
+        setProductDetail(null); // 👈 prevents stale UI
+
+        if (productCache.current[id]) {
+            setProductDetail(productCache.current[id]);
+            return productCache.current[id];
+        }
+
+        setLoadingDetail(true);
+
+        const res = await api.get<Product>(`/products/${id}`);
+
+        productCache.current[id] = res.data;
+        setProductDetail(res.data);
+
         return res.data;
-    };
+    } finally {
+        setLoadingDetail(false);
+    }
+}, []);
 
     const createProduct = async (data: Partial<Product>) => {
         const res = await api.post("/products", data);
@@ -173,7 +211,11 @@ export const ProductProvider = ({ children }: Props) => {
                 selectedCategory,
                 setSelectedCategory,
                 priceFilter,
-                setPriceFilter
+                setPriceFilter,
+                searchValue,
+                setSearchValue,
+                productDetail,
+                loadingDetail,
             }}
         >
             {children}

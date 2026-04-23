@@ -14,6 +14,8 @@ interface AuthContextType {
   register: (name: string, email: string, password: string, avatar: string) => any;
   logout: () => Promise<void>;
   completeOnboarding: () => Promise<void>;
+  searchIntent: boolean;
+  setSearchIntent: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -27,6 +29,7 @@ export const AuthProvider = ({ children }: Props) => {
   const [tokens, setTokens] = useState<AuthTokens | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean | null>(null);
+  const [searchIntent, setSearchIntent] = useState<boolean>(false);
 
   const isAuthenticated = !!user;
 
@@ -104,6 +107,8 @@ export const AuthProvider = ({ children }: Props) => {
         register,
         logout,
         completeOnboarding,
+        searchIntent,
+        setSearchIntent
       }}
     >
       {children}

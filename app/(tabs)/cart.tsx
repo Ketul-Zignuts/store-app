@@ -1,11 +1,12 @@
+import SafeAreaWrapper from '@/components/SafeAreaWrapper';
+import CartView from '@/view/cart/CartView';
 import React from 'react';
-import { Text, View } from 'react-native';
 
 const CartPage = () => {
     return (
-        <View>
-            <Text>cart</Text>
-        </View>
+        <SafeAreaWrapper>
+            <CartView />
+        </SafeAreaWrapper>
     )
 }
 

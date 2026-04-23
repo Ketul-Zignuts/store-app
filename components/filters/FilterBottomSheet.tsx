@@ -3,7 +3,7 @@ import { useProducts } from "@/hooks/useProduct";
 import { Ionicons } from "@expo/vector-icons";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import MultiSlider from "@ptomasroos/react-native-multi-slider";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import { TextInput } from "react-native-paper";
 import CustomButton from "../shared/Button";
@@ -11,33 +11,56 @@ import CustomButton from "../shared/Button";
 const MIN = 0;
 const MAX = 100000;
 
+type PriceFilter = {
+    price: number;
+    price_min: number;
+    price_max: number;
+};
+
+const getSheetRange = (filter: PriceFilter): [number, number] => [
+    filter.price_min > 0 ? filter.price_min : MIN,
+    filter.price_max > 0 ? filter.price_max : MAX,
+];
+
+const isSameFilter = (a: PriceFilter, b: PriceFilter) =>
+    a.price === b.price && a.price_min === b.price_min && a.price_max === b.price_max;
+
 const FilterBottomSheet = ({ bottomSheetRef }: any) => {
-    const snapPoints = useMemo(() => ["25%", "55%", "70%"], []);
+    const snapPoints = useMemo(() => ["25%", "55%", "70%", "72%"], []);
     const { priceFilter, setPriceFilter } = useProducts();
     const { width } = useWindowDimensions();
     const [localFilter, setLocalFilter] = useState(priceFilter);
     const [currentIndex, setCurrentIndex] = useState(0);
     const SLIDER_LENGTH = width - 40;
+    const initialRange = useMemo(() => getSheetRange(priceFilter), [priceFilter]);
 
-    const [range, setRange] = useState([
-        priceFilter.price_min || MIN,
-        priceFilter.price_max || MAX,
-    ]);
+    const [range, setRange] = useState<[number, number]>(initialRange);
+
+    useEffect(() => {
+        setLocalFilter(priceFilter);
+        setRange(initialRange);
+    }, [priceFilter, initialRange]);
 
     const handleApply = () => {
-        setPriceFilter({
+        const nextFilter = {
             ...localFilter,
             price_min: range[0],
             price_max: range[1],
-        });
+        };
+        if (!isSameFilter(nextFilter, priceFilter)) {
+            setPriceFilter(nextFilter);
+        }
         bottomSheetRef.current?.close();
     };
 
     const handleReset = () => {
         const reset = { price: 0, price_min: 0, price_max: 0 };
+        if (!isSameFilter(reset, priceFilter)) {
+            setPriceFilter(reset);
+        }
         setLocalFilter(reset);
         setRange([MIN, MAX]);
-        setPriceFilter(reset);
+        bottomSheetRef.current?.close();
     };
 
     const CustomHandle = () => (
@@ -46,12 +69,13 @@ const FilterBottomSheet = ({ bottomSheetRef }: any) => {
             <View style={styles.headerRow}>
                 <TouchableOpacity
                     style={styles.sideSlot}
-                    onPress={() =>
-                        bottomSheetRef.current?.snapToIndex(
-                            currentIndex === 0 ? 2 : 0
-                        )
-                    }
-                >
+                    onPress={() => {
+                        if(currentIndex === 0){
+                            bottomSheetRef.current?.snapToIndex(3)
+                        }else{
+                            bottomSheetRef.current?.close();
+                        }
+                    }}>
                     <Ionicons
                         name={currentIndex === 0 ? "chevron-up" : "chevron-down"}
                         size={20}
@@ -93,7 +117,7 @@ const FilterBottomSheet = ({ bottomSheetRef }: any) => {
                     max={MAX}
                     step={100}
                     sliderLength={SLIDER_LENGTH}
-                    onValuesChange={(vals) => setRange(vals)}
+                    onValuesChange={(vals) => setRange([vals[0], vals[1]])}
                     selectedStyle={{ backgroundColor: Colors.primary }}
                     unselectedStyle={{ backgroundColor: "#ddd" }}
                     markerStyle={{
@@ -112,13 +136,23 @@ const FilterBottomSheet = ({ bottomSheetRef }: any) => {
                     mode="outlined"
                     keyboardType="numeric"
                     value={String(localFilter.price)}
-                    activeOutlineColor="#FF8000"
+                    activeOutlineColor={Colors.orange.theme}
                     onChangeText={(text) =>
                         setLocalFilter((prev) => ({
                             ...prev,
                             price: Number(text) || 0,
                         }))
                     }
+                    theme={{
+                        colors: {
+                            onSurface: '#111111',
+                            onSurfaceVariant: '#666666',
+                            primary: Colors.orange.theme,
+                            outline: '#CCCCCC',
+                            error: '#FF0000',
+                            background: '#FFFFFF',
+                        },
+                    }}
                     style={styles.input}
                 />
                 <View style={styles.actions}>
@@ -208,6 +242,7 @@ const styles = StyleSheet.create({
     },
     input: {
         marginTop: 20,
+        backgroundColor: '#FFFFFF',  // ✅ prevents black bg on Android
     },
     actions: {
         flexDirection: "row",

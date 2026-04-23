@@ -21,6 +21,7 @@ export const Colors: Record<string, any> = {
     tertiary: '#DF8831',
     dark: '#FFA952',
     theme: '#FF5733',
-    opacity: '#FF57331A'
+    opacity: '#FF57331A',
+    opacity2: '#FF573380'
   },
 };

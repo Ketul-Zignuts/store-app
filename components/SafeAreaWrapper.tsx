@@ -8,7 +8,7 @@ interface SafeAreaWrapperProps {
 
 const SafeAreaWrapper: React.FC<SafeAreaWrapperProps> = ({ children }) => {
     return (
-        <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+        <SafeAreaView style={styles.container} edges={["top"]}>
             {children}
         </SafeAreaView>
     );

@@ -1,5 +1,6 @@
 import CategorySelections from "@/components/CategorySelections";
 import ProductCard from "@/components/home/ProductCard";
+import ProductSkeleton from "@/components/home/ProductSkeleton";
 import { Colors } from "@/constants/Colors";
 import { useProducts } from "@/hooks/useProduct";
 import { Ionicons } from "@expo/vector-icons";
@@ -48,19 +49,16 @@ const FilterProduct = ({
         loading,
         loadingMore,
         selectedCategory: activeCategory,
+        searchValue: productSearchValue,
+        priceFilter,
     } = useProducts();
     const isLoadingMoreRef = useRef(false);
     const [isCategoryPinned, setIsCategoryPinned] = useState(false);
 
     useEffect(() => {
-        loadProducts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    useEffect(() => {
         loadProducts(true);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [activeCategory]);
+    }, [activeCategory, productSearchValue, priceFilter]);
 
     const handleLoadMore = useCallback(async () => {
         if (!hasMore || loading || loadingMore || isLoadingMoreRef.current) return;
@@ -70,11 +68,20 @@ const FilterProduct = ({
     }, [hasMore, loading, loadingMore, loadMore]);
 
     const renderItem = useCallback(
-        ({ item }: { item: Product }) => (
-            <View style={{ marginHorizontal: 12 }}>
-                <ProductCard item={item} />
-            </View>
-        ),
+        ({ item }: { item: Product }) => {
+            if (item.id < 0) {
+                return (
+                    <View style={{ marginHorizontal: 12 }}>
+                        <ProductSkeleton />
+                    </View>
+                );
+            }
+            return (
+                <View style={{ marginHorizontal: 12 }}>
+                    <ProductCard item={item} />
+                </View>
+            );
+        },
         []
     );
 

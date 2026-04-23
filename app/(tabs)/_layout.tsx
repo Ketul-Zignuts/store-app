@@ -1,5 +1,5 @@
 import { Colors } from "@/constants/Colors";
-import { Ionicons, MaterialCommunityIcons, Octicons } from "@expo/vector-icons";
+import { AntDesign, Fontisto, Ionicons, Octicons } from "@expo/vector-icons";
 import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
@@ -10,6 +10,9 @@ const TabLayout = () => {
             tabBarShowLabel: false,
             tabBarActiveTintColor: '#FFFFFF',
             tabBarInactiveTintColor: '#9DA0A5',
+            sceneStyle: {
+                backgroundColor: "#FFF",
+            },
             tabBarItemStyle: {
                 height: '100%',
                 justifyContent: 'center',
@@ -36,8 +39,6 @@ const TabLayout = () => {
                 marginLeft: "10%"
             }
         }}>
-
-            {/* HOME */}
             <Tabs.Screen
                 name="home"
                 options={{
@@ -49,25 +50,29 @@ const TabLayout = () => {
                     )
                 }}
             />
-
-            {/* EXPLORE */}
             <Tabs.Screen
                 name="explore"
                 options={{
                     headerShown: false,
                     tabBarIcon: ({ focused, color }) => (
                         <View style={focused ? styles.activeTab : styles.inactiveTab}>
-                            <MaterialCommunityIcons
-                                name={focused ? "ticket-percent" : "ticket-percent-outline"}
-                                size={24}
-                                color={color}
-                            />
+                            {focused ? (
+                                <AntDesign
+                                    name="search"
+                                    size={24}
+                                    color={color}
+                                />
+                            ) : (
+                                <Fontisto
+                                    name="search"
+                                    size={24}
+                                    color={color}
+                                />
+                            )}
                         </View>
                     )
                 }}
             />
-
-            {/* CART (NEW) */}
             <Tabs.Screen
                 name="cart"
                 options={{
@@ -83,8 +88,6 @@ const TabLayout = () => {
                     )
                 }}
             />
-
-            {/* WISHLIST */}
             <Tabs.Screen
                 name="wishlist"
                 options={{
@@ -100,8 +103,6 @@ const TabLayout = () => {
                     )
                 }}
             />
-
-            {/* PROFILE */}
             <Tabs.Screen
                 name="profile"
                 options={{
@@ -117,7 +118,6 @@ const TabLayout = () => {
                     )
                 }}
             />
-
         </Tabs>
     );
 };

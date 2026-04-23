@@ -29,6 +29,7 @@ const CustomButton = ({
             }}
             labelStyle={{
                 color: style?.color ? style?.color : Colors.white,
+                fontFamily:'Rubik-Medium',
             }}
             {...rest}
         >

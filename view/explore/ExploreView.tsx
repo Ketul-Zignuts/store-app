@@ -3,7 +3,7 @@ import FilterProduct from '@/components/filters/FilterProduct'
 import Header from '@/components/header/Header'
 import { useProducts } from '@/hooks/useProduct'
 import BottomSheet from '@gorhom/bottom-sheet'
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { View } from 'react-native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 
@@ -11,9 +11,9 @@ const ExploreView = () => {
     const bottomSheetRef = useRef<BottomSheet>(null);
     const { categories, loadCategories, setSelectedCategory, selectedCategory } = useProducts();
 
-    const onPressCategory = (id: number | string | null) => {
-        setSelectedCategory(id === null ? null : id as string)
-    }
+    const onPressCategory = useCallback((id: number | string | null) => {
+        setSelectedCategory(id === null ? null : id as string);
+    }, [setSelectedCategory]);
 
     useEffect(() => {
         loadCategories?.();
@@ -21,7 +21,7 @@ const ExploreView = () => {
     }, []);
 
     const onPressFilter = () => {
-        if (bottomSheetRef?.current) bottomSheetRef?.current?.snapToIndex(0);
+        if (bottomSheetRef?.current) bottomSheetRef?.current?.snapToIndex(3);
     }
 
     return (

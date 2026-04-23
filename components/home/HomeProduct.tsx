@@ -1,10 +1,12 @@
 import CategorySelections from "@/components/CategorySelections";
 import BannerSlider from "@/components/home/BannerSlider";
 import ProductCard from "@/components/home/ProductCard";
+import ProductSkeleton from "@/components/home/ProductSkeleton";
 import { Colors } from "@/constants/Colors";
+import { Product } from "@/context/types/product";
 import { useProducts } from "@/hooks/useProduct";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     ActivityIndicator,
     FlatList,
@@ -14,14 +16,6 @@ import {
     Text,
     View,
 } from "react-native";
-
-type Product = {
-    id: number;
-    title: string;
-    price: number;
-    images: string[];
-    description?: string;
-};
 
 type Category = {
     id: number | string;
@@ -71,11 +65,20 @@ const HomeProduct = ({
     }, [hasMore, loading, loadingMore, loadMore]);
 
     const renderItem = useCallback(
-        ({ item }: { item: Product }) => (
-            <View style={{ marginHorizontal: 12 }}>
-                <ProductCard item={item} />
-            </View>
-        ),
+        ({ item }: { item: Product }) => {
+            if (item.id < 0) {
+                return (
+                    <View style={{ marginHorizontal: 12 }}>
+                        <ProductSkeleton />
+                    </View>
+                );
+            }
+            return (
+                <View style={{ marginHorizontal: 12 }}>
+                    <ProductCard item={item} />
+                </View>
+            );
+        },
         []
     );
 
@@ -113,6 +116,13 @@ const HomeProduct = ({
         []
     );
 
+    const displayProducts = useMemo(() => {
+        if (loading && products.length === 0) {
+            return Array(6).fill(null).map((_, index) => ({ id: -(index + 1) } as Product));
+        }
+        return products;
+    }, [loading, products]);
+
     return (
         <View style={styles.container}>
             {isCategoryPinned && (
@@ -125,7 +135,7 @@ const HomeProduct = ({
                 </View>
             )}
             <FlatList
-                data={products}
+                data={displayProducts}
                 keyExtractor={keyExtractor}
                 renderItem={renderItem}
                 numColumns={2}
@@ -169,13 +179,13 @@ const styles = StyleSheet.create({
         backgroundColor: "#FFF",
     },
     listContent: {
-        paddingTop: 10,
+        paddingTop: 0,
         paddingBottom: 32,
     },
     stickyCategoryContainer: {
         marginHorizontal: -16,
         backgroundColor: "#fff",
-        paddingVertical: 6,
+        paddingVertical: 0,
         paddingHorizontal: 20
     },
     pinnedCategoryContainer: {

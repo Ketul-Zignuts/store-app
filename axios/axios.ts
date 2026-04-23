@@ -29,14 +29,13 @@ api.interceptors.response.use(
             originalRequest._retry = true;
             try {
                 const stored = await AsyncStorage.getItem("tokens");
-                if (!stored) throw new Error("No tokens found");
+                if (!stored) {
+                    return Promise.reject(error);
+                }
                 const tokens = JSON.parse(stored);
-                const res = await axios.post(
-                    API_REFRESH_TOKEN_URL,
-                    {
-                        refreshToken: tokens.refresh_token,
-                    }
-                );
+                const res = await axios.post(API_REFRESH_TOKEN_URL, {
+                    refreshToken: tokens.refresh_token,
+                });
                 const newTokens = res.data;
                 await AsyncStorage.setItem("tokens", JSON.stringify(newTokens));
                 originalRequest.headers.Authorization = `Bearer ${newTokens.access_token}`;
@@ -44,7 +43,6 @@ api.interceptors.response.use(
             } catch (refreshError) {
                 console.log("Refresh token failed", refreshError);
                 await AsyncStorage.removeItem("tokens");
-
                 return Promise.reject(refreshError);
             }
         }

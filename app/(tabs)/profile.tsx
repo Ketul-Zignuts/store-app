@@ -1,11 +1,12 @@
+import SafeAreaWrapper from '@/components/SafeAreaWrapper'
+import ProfileView from '@/view/profile/ProfileView'
 import React from 'react'
-import { Text, View } from 'react-native'
 
 const ProfilePage = () => {
     return (
-        <View>
-            <Text>ProfilePage</Text>
-        </View>
+        <SafeAreaWrapper>
+            <ProfileView />
+        </SafeAreaWrapper>
     )
 }
 

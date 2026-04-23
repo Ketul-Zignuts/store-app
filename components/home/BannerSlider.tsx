@@ -1,5 +1,5 @@
 import React from "react";
-import { Dimensions, Image, Platform, StyleSheet, View } from "react-native";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
 
 const { width } = Dimensions.get("window");
@@ -32,7 +32,7 @@ const BannerSlider = () => {
         <Carousel
             loop
             width={width}
-            height={Platform.OS === "android" ? 250 : 300}
+            height={250}
             autoPlay
             data={banners}
             scrollAnimationDuration={800}
@@ -57,6 +57,6 @@ const styles = StyleSheet.create({
     },
     image: {
         width: width,
-        height: Platform.OS === "android" ? 250 : 300,
+        height: 250,
     },
 });

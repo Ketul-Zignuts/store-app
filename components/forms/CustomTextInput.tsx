@@ -1,3 +1,4 @@
+import { Colors } from '@/constants/Colors';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { TextInput } from 'react-native-paper';
@@ -48,14 +49,28 @@ const CustomTextInput = ({
                         right={
                             icon ? <TextInput.Icon icon={icon} onPress={onIconPress} /> : null
                         }
+                        theme={{
+                            colors: {
+                                onSurface: '#111111',
+                                onSurfaceVariant: '#666666',
+                                primary: Colors.orange.theme,
+                                outline: '#CCCCCC',
+                                error: '#FF0000',
+                                background: '#FFFFFF'
+                            },
+                        }}
                         style={[
                             styles.textInput,
-                            multiline && styles.multilineInput, // Apply extra padding for multiline
+                            multiline && styles.multilineInput,
                             sx,
                         ]}
                         {...rest}
                     />
-                    {error && <Text style={[ERROR_TEXT_STYLE, { paddingLeft: 0, marginLeft: 0 }]}>{helperText}</Text>}
+                    {error && (
+                        <Text style={[ERROR_TEXT_STYLE, { paddingLeft: 0, marginLeft: 0 }]}>
+                            {helperText}
+                        </Text>
+                    )}
                 </View>
             )}
         />
@@ -67,11 +82,11 @@ const styles = StyleSheet.create({
         marginTop: 8,
     },
     textInput: {
-        backgroundColor: 'white'
+        backgroundColor: '#FFFFFF',
     },
     multilineInput: {
-        minHeight: 100, // Adjust this value based on `numberOfLines`
-        paddingVertical: 10, // Add some padding for better appearance
+        minHeight: 100,
+        paddingVertical: 10,
     },
     errorText: {
         color: 'red',

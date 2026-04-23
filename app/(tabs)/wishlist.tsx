@@ -1,11 +1,12 @@
+import SafeAreaWrapper from '@/components/SafeAreaWrapper'
+import WishListView from '@/view/wishlist/WishListView'
 import React from 'react'
-import { Text, View } from 'react-native'
 
 const WishListPage = () => {
     return (
-        <View>
-            <Text>WishListPage</Text>
-        </View>
+        <SafeAreaWrapper>
+            <WishListView />
+        </SafeAreaWrapper>
     )
 }
 
