@@ -4,6 +4,8 @@ import CustomButton from '@/components/shared/Button';
 import NoListItem from '@/components/shared/NoListItem';
 import { Colors } from '@/constants/Colors';
 import { useCart } from '@/hooks/useCart';
+import { useCheckout } from '@/hooks/useCheckout';
+import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
     FlatList,
@@ -15,6 +17,7 @@ import {
 const PAGE_SIZE = 10;
 
 const CartView = () => {
+    const { checkoutFromCart } = useCheckout();
     const { cart: cartItems, totalItems, totalPrice } = useCart();
     const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
@@ -40,7 +43,17 @@ const CartView = () => {
                         Buy Now • ${totalPrice.toFixed(2)}
                     </Text>
                 </View>
-                <CustomButton icon='cart' color={Colors.orange.theme}>Buy Now</CustomButton>
+                <CustomButton
+                    icon='cart'
+                    color={Colors.orange.theme}
+                    onPress={() => {
+                        if (cartItems.length === 0) return;
+                        checkoutFromCart(cartItems as any);
+                        router.push("/checkout");
+                    }}
+                >
+                    Buy Now
+                </CustomButton>
             </View>
             <FlatList
                 data={visibleData}

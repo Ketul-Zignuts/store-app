@@ -1,4 +1,5 @@
 import { AuthProvider } from '@/context/AuthContext';
+import { CheckoutProvider } from '@/context/CheckoutContext';
 import { ModalProvider } from '@/context/ModalContext';
 import { ProductProvider } from '@/context/ProductContext';
 import { ToastProvider } from '@/context/ToastContext';
@@ -18,12 +19,14 @@ const Providers: React.FC<ProvidersProps> = (props) => {
       <AuthProvider>
         <ProductProvider>
           <ToastProvider>
-            <ModalProvider>
-              <PaperProvider>
-                {children}
-                <Toast />
-              </PaperProvider>
-            </ModalProvider>
+            <CheckoutProvider>
+              <ModalProvider>
+                <PaperProvider>
+                  {children}
+                  <Toast />
+                </PaperProvider>
+              </ModalProvider>
+            </CheckoutProvider>
           </ToastProvider>
         </ProductProvider>
       </AuthProvider>

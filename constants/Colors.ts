@@ -1,5 +1,49 @@
+interface GreenColors {
+  primary: string;
+  dark: string;
+  light: string;
+  bg: string;
+  border: string;
+  text: string;
+  success: string;
+  successBg: string;
+  opacity: string;
+}
 
-export const Colors: Record<string, any> = {
+interface PurpleColors {
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  dark: string;
+}
+
+interface OrangeColors {
+  primary: string;
+  secondary: string;
+  tertiary: string;
+  dark: string;
+  theme: string;
+  opacity: string;
+  opacity2: string;
+}
+
+interface AppColors {
+  primary: string;
+  primary2: string;
+  primary3: string;
+  black: string;
+  black2: string;
+  black3: string;
+  black4: string;
+  white: string;
+  heart: string;
+  error: string;
+  green: GreenColors;
+  purple: PurpleColors;
+  orange: OrangeColors;
+}
+
+export const Colors: AppColors = {
   primary: '#0061FF',
   primary2: 'rgba(0, 97, 255, 0.1)',
   primary3: 'rgba(0, 97, 255, 0.04)',
@@ -34,6 +78,6 @@ export const Colors: Record<string, any> = {
     dark: '#FFA952',
     theme: '#FF5733',
     opacity: '#FF57331A',
-    opacity2: '#FF573380'
+    opacity2: '#FF573380',
   },
 };
