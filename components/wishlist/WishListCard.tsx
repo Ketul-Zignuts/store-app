@@ -1,6 +1,9 @@
 import { TonalIconChip } from '@/components/TonalChip';
 import { Colors } from '@/constants/Colors';
+import { useToast } from '@/context/ToastContext';
+import { useCart } from '@/hooks/useCart';
 import { useWishlist } from '@/hooks/useWishlist';
+import { formatPrice } from '@/utils/Utils';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -27,27 +30,56 @@ type Props = {
 
 const WishListCard = ({ data }: Props) => {
   const { updateQty, toggleWishlist } = useWishlist();
-  const qty = data.qty || 1;
+  const { showToast } = useToast();
+  const {
+    addWithQuantity,
+    increment,
+    decrement,
+    setQuantity,
+    cart,
+  } = useCart();
+
+  const wishlistQty = data.qty || 1;
+  const cartItem = cart.find(
+    i => Number(i.id) === Number(data.productId)
+  );
+  const cartQty = cartItem?.quantity ?? 0;
   const [imgError, setImgError] = useState(false);
-  const [inputValue, setInputValue] = useState(String(qty));
+  const [inputValue, setInputValue] = useState(String(wishlistQty));
 
   useEffect(() => {
-    setInputValue(String(qty));
-  }, [qty]);
+    setInputValue(String(wishlistQty));
+  }, [wishlistQty]);
 
-  const increaseQty = () => updateQty(data.id, qty + 1);
+  const increaseQty = () => {
+    const newQty = wishlistQty + 1;
+    updateQty(data.id, newQty);
+    setInputValue(String(newQty));
+  };
 
-  const decreaseQty = () =>
-    updateQty(data.id, qty > 1 ? qty - 1 : 1);
+  const decreaseQty = () => {
+    const newQty = wishlistQty > 1 ? wishlistQty - 1 : 1;
+    updateQty(data.id, newQty);
+    setInputValue(String(newQty));
+  };
 
   const handleInputChange = (value: string) => {
-    if (/^\d*$/.test(value)) setInputValue(value);
+    if (/^\d*$/.test(value)) {
+      setInputValue(value);
+
+      const num = parseInt(value);
+      if (!isNaN(num) && num > 0) {
+        updateQty(data.id, num);
+      }
+    }
   };
 
   const handleBlur = () => {
     let num = parseInt(inputValue);
     if (isNaN(num) || num < 1) num = 1;
+
     updateQty(data.id, num);
+    setInputValue(String(num));
   };
 
   const handleDelete = () => {
@@ -60,13 +92,52 @@ const WishListCard = ({ data }: Props) => {
     });
   };
 
-  const handleAddToCart = () => {
-    console.log('Add to cart:', data.title, 'qty:', qty);
+  const handleAddToCart = async () => {
+    const qty = parseInt(inputValue) || 1;
+
+    const product = {
+      id: data.productId,
+      title: data.title,
+      price: data.price,
+      images: [data.image],
+    };
+
+    const existingItem = cart.find(
+      i => Number(i.id) === Number(data.productId)
+    );
+
+    if (existingItem) {
+      await setQuantity(data.productId, qty);
+    } else {
+      await addWithQuantity(product, qty);
+    }
+
+    showToast('success', `${data.title} added to cart`);
   };
 
   return (
     <View style={styles.card}>
-      <Pressable onPress={() => router.push(`/product/${data.productId}`)}>
+      {cartQty > 0 && (
+        <View style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          backgroundColor: Colors.orange.theme,
+          borderBottomLeftRadius: 12,
+          borderTopRightRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 2,
+          zIndex: 1,
+        }}>
+          <Text style={{ color: Colors.white, fontSize: 10, fontFamily: 'Rubik-Bold' }}>
+            In Cart
+          </Text>
+        </View>
+      )}
+
+      <Pressable
+        onPress={() => router.push(`/product/${data.productId}`)}
+      >
         {!data.image || imgError ? (
           <Image
             source={require('@/assets/images/placeholder.png')}
@@ -80,13 +151,18 @@ const WishListCard = ({ data }: Props) => {
           />
         )}
       </Pressable>
+
       <View style={styles.content}>
         <View style={styles.topRow}>
           <Text numberOfLines={1} style={styles.title}>
             {data.title}
           </Text>
           <Pressable onPress={handleDelete}>
-            <Ionicons name="trash-outline" size={18} color={Colors.error} />
+            <Ionicons
+              name="trash-outline"
+              size={18}
+              color={Colors.error}
+            />
           </Pressable>
         </View>
         <View style={styles.ratingRow}>
@@ -97,36 +173,58 @@ const WishListCard = ({ data }: Props) => {
         </View>
         <View style={styles.bottomRow}>
           <Text style={styles.price}>
-            ${(data.price * qty).toFixed(2)}
+            $
+            {formatPrice(
+              (data.price * (cartQty || parseInt(inputValue) || 1)).toFixed(2)
+            )}
           </Text>
           <View style={styles.actionsRow}>
-            <View style={styles.qtyContainer}>
-              <Pressable style={styles.btn} onPress={decreaseQty}>
-                <Text style={styles.btnText}>-</Text>
-              </Pressable>
-              <TextInput
-                value={inputValue}
-                onChangeText={handleInputChange}
-                onBlur={handleBlur}
-                keyboardType="numeric"
-                selectTextOnFocus
-                style={styles.input}
-              />
-
-              <Pressable style={styles.btn} onPress={increaseQty}>
-                <Text style={styles.btnText}>+</Text>
-              </Pressable>
-            </View>
-            <TonalIconChip
-              iconName="cart"
-              label="cart"
-              onPress={handleAddToCart}
-              size={28}
-              backgroundColor={Colors.heart}
-              iconColor={Colors.white}
-              square
-            />
-
+            {cartQty > 0 ? (
+              <View style={styles.qtyContainer}>
+                <Pressable
+                  style={styles.btn}
+                  onPress={() => decrement(data.productId)}
+                >
+                  <Text style={styles.btnText}>-</Text>
+                </Pressable>
+                <Text style={styles.qtyText}>{cartQty}</Text>
+                <Pressable
+                  style={styles.btn}
+                  onPress={() => increment(data.productId)}
+                >
+                  <Text style={styles.btnText}>+</Text>
+                </Pressable>
+              </View>
+            ) : (
+              <>
+                <View style={styles.qtyContainer}>
+                  <Pressable style={styles.btn} onPress={decreaseQty}>
+                    <Text style={styles.btnText}>-</Text>
+                  </Pressable>
+                  <TextInput
+                    value={inputValue}
+                    onChangeText={handleInputChange}
+                    onBlur={handleBlur}
+                    keyboardType="numeric"
+                    selectTextOnFocus
+                    style={styles.input}
+                  />
+                  <Pressable style={styles.btn} onPress={increaseQty}>
+                    <Text style={styles.btnText}>+</Text>
+                  </Pressable>
+                </View>
+                <Pressable onPress={handleAddToCart}>
+                  <TonalIconChip
+                    iconName="cart"
+                    label="cart"
+                    size={28}
+                    backgroundColor={Colors.heart}
+                    iconColor={Colors.white}
+                    square
+                  />
+                </Pressable>
+              </>
+            )}
           </View>
         </View>
       </View>
@@ -145,6 +243,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginTop: 16,
     alignItems: 'center',
+    position: 'relative'
   },
 
   image: {
@@ -219,16 +318,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  qtyText: {
+    fontSize: 14,
+    fontWeight: '700',
+    paddingHorizontal: 6,
+  },
+
   input: {
     width: 40,
     textAlign: 'center',
     fontSize: 14,
     paddingVertical: 2,
-  },
-
-  cartBtn: {
-    backgroundColor: '#0D0D1A',
-    padding: 8,
-    borderRadius: 8,
   },
 });

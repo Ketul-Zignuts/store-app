@@ -2,6 +2,7 @@ import CategorySelections from "@/components/CategorySelections";
 import BannerSlider from "@/components/home/BannerSlider";
 import ProductCard from "@/components/home/ProductCard";
 import ProductSkeleton from "@/components/home/ProductSkeleton";
+import NoListItem from "@/components/shared/NoListItem";
 import { Colors } from "@/constants/Colors";
 import { Product } from "@/context/types/product";
 import { useProducts } from "@/hooks/useProduct";
@@ -28,7 +29,7 @@ type HomeProductProps = {
     onPressCategory: (id: number | string | null) => void;
 };
 
-const BANNER_HEIGHT = 300;
+const BANNER_HEIGHT = 248;
 
 const HomeProduct = ({
     categories,
@@ -94,9 +95,12 @@ const HomeProduct = ({
     const ListEmpty = useCallback(() => {
         if (loading) return null;
         return (
-            <View style={styles.emptyState}>
-                <Text style={styles.emptyText}>No products found</Text>
-            </View>
+            <NoListItem
+                iconName="cube-outline"
+                title="No products found"
+                subtitle="We couldn't find any products matching your criteria."
+                freeHeight
+            />
         );
     }, [loading]);
 

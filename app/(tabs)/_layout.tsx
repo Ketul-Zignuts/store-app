@@ -73,21 +73,7 @@ const TabLayout = () => {
                     )
                 }}
             />
-            <Tabs.Screen
-                name="cart"
-                options={{
-                    headerShown: false,
-                    tabBarIcon: ({ focused, color }) => (
-                        <View style={focused ? styles.activeTab : styles.inactiveTab}>
-                            <Ionicons
-                                name={focused ? "cart" : "cart-outline"}
-                                size={24}
-                                color={color}
-                            />
-                        </View>
-                    )
-                }}
-            />
+            
             <Tabs.Screen
                 name="wishlist"
                 options={{

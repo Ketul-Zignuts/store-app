@@ -2,12 +2,12 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import React, { ComponentProps, useEffect, useRef } from 'react';
 import {
-    Animated,
-    Dimensions,
-    Easing,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
+  Animated,
+  Dimensions,
+  Easing,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
 } from 'react-native';
 
 const { height } = Dimensions.get('window');
@@ -18,6 +18,7 @@ interface EmptyStateProps {
   subtitle?: string;
   ctaLabel?: string;
   onAction?: () => void;
+  freeHeight?: boolean;
 }
 
 const NoListItem: React.FC<EmptyStateProps> = ({
@@ -25,6 +26,7 @@ const NoListItem: React.FC<EmptyStateProps> = ({
   title = 'Nothing here yet',
   subtitle = "It's looking a little empty.\nCheck back soon.",
   ctaLabel,
+  freeHeight = false,
   onAction,
 }) => {
   const fadeAnim  = useRef(new Animated.Value(0)).current;
@@ -69,7 +71,7 @@ const NoListItem: React.FC<EmptyStateProps> = ({
 
   return (
     <Animated.View
-      style={[styles.container, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
+      style={[styles.container, { height: freeHeight ? 'auto' : height * 0.6,opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
     >
       <Animated.View style={[styles.iconWrapper, { transform: [{ scale: pulseAnim }] }]}>
         <Ionicons name={iconName} size={52} color={Colors.orange.primary} />
@@ -94,7 +96,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 32,
     gap: 12,
-    height: height * 0.6,
   },
   iconWrapper: {
     width: 96,

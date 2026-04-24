@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     },
     imageWrapper: {
         width: "100%",
-        height: 160,
+        height: 120,
         backgroundColor: "#f0f0f0",
     },
     info: {

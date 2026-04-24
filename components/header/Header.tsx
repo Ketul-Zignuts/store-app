@@ -1,4 +1,6 @@
+import { Colors } from "@/constants/Colors";
 import { useAuth } from "@/hooks/useAuth";
+import { useCart } from "@/hooks/useCart";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useProducts } from "@/hooks/useProduct";
 import { Feather, Ionicons } from "@expo/vector-icons";
@@ -18,7 +20,8 @@ type HeaderProps = {
     containerPaddingBottom?: number;
 }
 
-const Header = ({ onPressFilter,containerPaddingBottom = 0 }: HeaderProps) => {
+const Header = ({ onPressFilter, containerPaddingBottom = 0 }: HeaderProps) => {
+    const { totalItems } = useCart();
     const { user, searchIntent, setSearchIntent } = useAuth();
     const pathname = usePathname();
     const firstName = user?.name?.trim()?.split(" ")?.[0] ?? "Guest User";
@@ -54,7 +57,7 @@ const Header = ({ onPressFilter,containerPaddingBottom = 0 }: HeaderProps) => {
     }, [priceFilter]);
 
     return (
-        <View style={{...styles.container, paddingBottom: containerPaddingBottom}}>
+        <View style={{ ...styles.container, paddingBottom: containerPaddingBottom }}>
             <View style={styles.topRow}>
                 <View>
                     <Text style={styles.greeting}>
@@ -63,12 +66,23 @@ const Header = ({ onPressFilter,containerPaddingBottom = 0 }: HeaderProps) => {
                     <Text style={styles.subText}>Welcome to store</Text>
                 </View>
                 <View style={styles.rightIcons}>
-                    <TouchableOpacity style={styles.iconBtn}>
-                        <Ionicons
-                            name="notifications-outline"
-                            size={22}
-                            color="#111"
-                        />
+                    <TouchableOpacity
+                        style={styles.iconBtn}
+                        onPress={() => router.push("/cart")}
+                    >
+                        <Ionicons name="cart-outline" size={22} color="#111" />
+
+                        {totalItems > 0 && (
+                            <View style={{
+                                ...styles.cartBadge,
+                                minWidth: totalItems > 9 ? totalItems > 99 ? 34 : 28 : 16,
+                                height: 16,
+                            }}>
+                                <Text style={styles.cartBadgeText}>
+                                    {totalItems > 99 ? "99+" : totalItems}
+                                </Text>
+                            </View>
+                        )}
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => {
                         if (!user) {
@@ -198,6 +212,21 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     filterBadgeText: {
+        color: "#fff",
+        fontSize: 10,
+        fontWeight: "700",
+    },
+    cartBadge: {
+        position: "absolute",
+        top: -6,
+        right: -6,
+        borderRadius: 6,
+        paddingHorizontal: 6,
+        backgroundColor: Colors.orange.theme,
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    cartBadgeText: {
         color: "#fff",
         fontSize: 10,
         fontWeight: "700",

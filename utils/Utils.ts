@@ -57,3 +57,23 @@ const productStore = {
 };
 
 export default productStore;
+
+export const formatPrice = (price: number | string) => {
+  const value = Number(price);
+
+  if (isNaN(value)) return price;
+
+  if (value >= 1_000_000_000) {
+    return (value / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+  }
+
+  if (value >= 1_000_000) {
+    return (value / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+  }
+
+  if (value >= 100_000) {
+    return (value / 1_000).toFixed(0) + 'K'; // 100K, 250K
+  }
+
+  return value.toString();
+};

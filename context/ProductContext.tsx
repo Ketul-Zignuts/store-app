@@ -40,7 +40,7 @@ interface ProductContextType {
 
     loadCategories: () => Promise<void>;
 
-    getProductById: (id: number) => Promise<Product>;
+    getProductById: (id: number) => Promise<Product | undefined>;
     createProduct: (data: Partial<Product>) => Promise<Product>;
     updateProduct: (id: number, data: Partial<Product>) => Promise<Product>;
     deleteProduct: (id: number) => Promise<void>;
@@ -50,6 +50,7 @@ interface ProductContextType {
     setSearchValue: React.Dispatch<React.SetStateAction<string>>
     productDetail: Product | null;
     loadingDetail: boolean;
+    relatedProducts: Product[];
 }
 
 export const ProductContext = createContext<ProductContextType | null>(null);
@@ -72,6 +73,7 @@ export const ProductProvider = ({ children }: Props) => {
     const [searchValue, setSearchValue] = useState<string>("")
     const [productDetail, setProductDetail] = useState<Product | null>(null);
     const [loadingDetail, setLoadingDetail] = useState(false);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const productCache = useRef<Record<number, Product>>({});
     const offsetRef = useRef(0);
 
@@ -156,26 +158,30 @@ export const ProductProvider = ({ children }: Props) => {
     };
 
     const getProductById = useCallback(async (id: number) => {
-    try {
-        setProductDetail(null); // 👈 prevents stale UI
+        try {
+            setLoadingDetail(true);
 
-        if (productCache.current[id]) {
-            setProductDetail(productCache.current[id]);
-            return productCache.current[id];
+            if (productCache.current[id]) {
+                setProductDetail(productCache.current[id]);
+            }
+
+            const [productRes, relatedRes] = await Promise.all([
+                api.get<Product>(`/products/${id}`),
+                api.get<Product[]>(`/products/${id}/related`),
+            ]);
+
+            productCache.current[id] = productRes.data;
+
+            setProductDetail(productRes.data);
+            setRelatedProducts(relatedRes.data);
+
+            return productRes.data;
+        } catch (error) {
+            console.log("getProductById error:", error);
+        } finally {
+            setLoadingDetail(false);
         }
-
-        setLoadingDetail(true);
-
-        const res = await api.get<Product>(`/products/${id}`);
-
-        productCache.current[id] = res.data;
-        setProductDetail(res.data);
-
-        return res.data;
-    } finally {
-        setLoadingDetail(false);
-    }
-}, []);
+    }, []);
 
     const createProduct = async (data: Partial<Product>) => {
         const res = await api.post("/products", data);
@@ -216,6 +222,7 @@ export const ProductProvider = ({ children }: Props) => {
                 setSearchValue,
                 productDetail,
                 loadingDetail,
+                relatedProducts
             }}
         >
             {children}
